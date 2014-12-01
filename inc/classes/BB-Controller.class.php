@@ -163,7 +163,25 @@ class BackbonedController {
 			return htmlspecialchars($value, ENT_COMPAT, 'UTF-8');
 		};
 		$mustache_options['charset'] = 'utf-8';
-		$mustache_options['helpers'] = array('foo' => function() { return (isset($_GET['_escaped_fragment_']))? true : false; });
+
+		/**
+		 * Allow i18n (internationalization) of strings. But remember
+		 * that this part is only when pages are passed through PHP’s Mustache.
+		 *
+		 * To use in templates, use like this:
+		 *
+		 *     {{#localize}}Untrash{{/localize}}
+		 *
+		 * Note that this assumes the following:
+		 * 1. You set the WP_DEFAULT_THEME constant to your theme name key
+		 * 2. You use load_theme_textdomain at hook "after_setup_theme", with local textdomain mathinc your theme name key
+		 *
+		 * If you use a child-theme of Backboned-v2, make sure you copy your GetText translation files
+		 * and you’ll have to make sure you have some way for JavaScript to re-use your GetText files into JSON files.
+		 */
+		$mustache_options['helpers']['localize'] = function($a='') {
+			return __($a); // Use WP_DEFAULT_THEME as domain #TODO
+		};
 
 		$this->mustache = new Mustache_Engine($mustache_options);
 	}
@@ -235,7 +253,7 @@ class BackbonedController {
 			$this->wp_model->get('site_header')
 		);
 
-		$content['nav-items'] = $this->wp_model->get('main_nav');
+		$content['nav-items'] = $this->wp_model->get('navigation');
 		$content['categories'] = $this->wp_model->get('categories');
 		$content['archives'] = $this->wp_model->get('archives');
 
@@ -500,7 +518,7 @@ class BackbonedController {
 			'template_url' => get_stylesheet_directory_uri(),
 			'logged_in' => is_user_logged_in(),
 			'site_header' => $this->wp_model->get('site_header'),
-			'main_nav' => $this->wp_model->get('main_nav'),
+			'main_nav' => $this->wp_model->get('navigation'),
 			'aside' => array(
 				'categories' => $this->wp_model->get('categories'),
 				'archives' => $this->wp_model->get('archives')

@@ -2,7 +2,7 @@
 
 /*
  * Wordpress Model Class
-**/
+ */
 class WP_Model {
 
 
@@ -26,7 +26,7 @@ class WP_Model {
     return strftime(get_option('date_format'), $unixtimestamp);
 	}
 
-	/**
+	/*
 	 * Initialize error messages
 	 *
 	 * Maybe we would want this to be internationalized too.
@@ -48,7 +48,7 @@ class WP_Model {
 	 * Global Getter-function.
 	 *
 	 * @return function
-	**/
+	 */
 	public function get() {
 
 		$args = func_get_args();
@@ -62,7 +62,7 @@ class WP_Model {
 	 * Header info
 	 *
 	 * @return array
-	**/
+	 */
 	protected function __get_site_header() {
 
 		return array(
@@ -74,11 +74,26 @@ class WP_Model {
 	}
 
 	/*
-	 * Main navigation
+	 * Method used to get top navigation link data
 	 *
-	 * @return array
-	**/
-	protected function __get_main_nav() {
+	 * If no menu is defined, will take the list of pages
+	 * WordPress has.
+	 */
+	protected function __get_navigation() {
+		$test = wp_get_nav_menus();
+		if(isset($test[0])) {
+			return $this->wordpress_menu();
+		} else {
+			return $this->default_menu();
+		}
+	}
+
+	/*
+	 * WordPress menu for navigation data
+	 *
+	 * Instead of using page lists, use WordPress’ internal menu system.
+	 */
+	protected function wordpress_menu() {
 
 		// See also those related functions
 		// to get menus. They had useful notes
@@ -89,15 +104,15 @@ class WP_Model {
 		//   - get_nav_menu_locations()
 		//   - wp_get_nav_menu_object()
 
-		// Assuming we have ONLY ONE menu. Otherwise it breaks.
+		// Assuming we have ONLY ONE menu.
+		// Otherwise it blindly gets the first one it finds
 		$menus = wp_get_nav_menus();
 		$menu = $menus[0];
 		$menu_items = wp_get_nav_menu_items( $menu->term_id );
 
-	  // ==== /Copy-pasting code is bad, m-kay... =====
+		// ==== /Copy-pasting code is bad, m-kay... =====
 		// This is only to sort menu like WordPress is doing it.
-		// Sorry about that.
-		// See around line 336 of wp-inclucdes/nav-menu-template.php
+		// See WordPress core (4.0) at wp-inclucdes/nav-menu-template.php around line 336 
 		$sorted_menu_items = $menu_items_with_children = array();
 		foreach ( (array) $menu_items as $menu_item ) {
 			$sorted_menu_items[ $menu_item->menu_order ] = $menu_item;
@@ -110,16 +125,12 @@ class WP_Model {
 					$menu_item->classes[] = 'menu-item-has-children';
 			}
 		}
-	  // ==== /Copy-pasting code is bad, m-kay... =====
-
-		//var_dump($sorted_menu_items);
+		// ==== /Copy-pasting code is bad, m-kay... =====
 
 		$out = array();
 
-
 		foreach($sorted_menu_items as $m) {
 			$e = array();
-			//$e['tmp'] = $m;
 			if(is_category($m->object_id)) {
 				$e['current'] = true;
 			}
@@ -128,10 +139,16 @@ class WP_Model {
 			$e['id'] = $m->ID;
 			$out[] = $e;
 		}
-		//var_dump($out);
 
 		return $out;
+	}
 
+	/*
+	 * Main navigation
+	 *
+	 * @return array
+	 */
+	protected function default_menu() {
 
 		$pages = get_pages('parent=0');
 		$page_array = array();
@@ -164,7 +181,7 @@ class WP_Model {
 	 * Category navigation
 	 *
 	 * @return array
-	**/
+	 */
 	protected function __get_categories() {
 
 		$categories = get_categories('hierarchical=0');
@@ -194,7 +211,7 @@ class WP_Model {
 	 * Archive navigation
 	 *
 	 * @return array
-	**/
+	 */
 	protected function __get_archives() {
 
 		$archive = wp_get_archives('format=custom&echo=0&show_post_count=1&before=&after=');
@@ -231,7 +248,7 @@ class WP_Model {
 	 * The site footer
 	 *
 	 * @return array
-	**/
+	 */
 	protected function __get_footer() {
 
 		return array(
@@ -245,7 +262,7 @@ class WP_Model {
 	 * Total post count
 	 *
 	 * @return number
-	**/
+	 */
 	protected function __get_post_count() {
 
 		$count_posts = wp_count_posts();
@@ -256,7 +273,7 @@ class WP_Model {
 
 	/*
 	 * Get name of currently logged in user
-	**/
+	 */
 	protected function __get_username() {
 
 		return $this->user->display_name;
@@ -268,7 +285,7 @@ class WP_Model {
 	 *
 	 * @param  number [$id] Post-/Page-ID
 	 * @return array
-	**/
+	 */
 	protected function __get_commentform($id = null) {
 
 		$ret = array();
@@ -300,7 +317,7 @@ class WP_Model {
 	 * The current Loop
 	 *
 	 * @return array
-	**/
+	 */
 	protected function __get_loop() {
 
 		$paged = get_query_var('paged')
@@ -350,7 +367,7 @@ class WP_Model {
 	 *
 	 * @param  number [$id] Post-ID
 	 * @return array
-	**/
+	 */
 	protected function __get_post($id = null) {
 
 		global $post;
@@ -374,7 +391,7 @@ class WP_Model {
 	 *
 	 * @param  number [$id] Post-ID
 	 * @return array
-	**/
+	 */
 	protected function __get_comments($id = null) {
 
 		global $post;
@@ -407,7 +424,7 @@ class WP_Model {
 	 *
 	 * @param  number [$id] Post-ID
 	 * @return array
-	**/
+	 */
 	protected function __get_post_cats($id = null) {
 
 		global $post;
@@ -435,7 +452,7 @@ class WP_Model {
 	 *
 	 * @param  number [$id] Page-ID
 	 * @return array
-	**/
+	 */
 	protected function __get_page($id = null) {
 
 		global $post;
@@ -462,7 +479,7 @@ class WP_Model {
 	 *
 	 * @param  number [$id] Post-/Page-ID
 	 * @return array
-	**/
+	 */
 	protected function __get_author($id = null) {
 
 		if ( is_null($id) ) {
@@ -477,16 +494,16 @@ class WP_Model {
 
 	}
 
-	/**
+	/*
 	 * Content of the error view
 	 *
 	 * @return array
-   **/
+   */
 	protected function __get_error($code) {
 		return $this->supported_errors[$code];
 	}
 
-	/**
+	/*
 	 * Get list of supported errors messages
 	 *
 	 * @return array of HTTP status codes numbers

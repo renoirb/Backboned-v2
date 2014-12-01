@@ -27,7 +27,6 @@ if ( ! function_exists( 'bb_after_setup_theme' ) ) {
 
 }
 
-add_action( 'after_setup_theme', 'bb_after_setup_theme');
 
 /**
  * Give a chance to configure outside of the theme
@@ -41,7 +40,6 @@ if ( ! function_exists( 'bb_init' ) ) {
 
 }
 
-add_action( 'init', 'bb_init', 11);
 
 /**
  * Set the content width based on the theme's design and stylesheet.
@@ -50,11 +48,11 @@ if ( ! isset( $content_width ) ) {
 	$content_width = 570;
 }
 
-function wp_bb_init( &$WP_Instance ) {
+
+function bb_wp( &$WP_Instance ) {
 	$GLOBALS['bb_controller'] = new BackbonedController($WP_Instance);
 }
 
-add_action( 'wp', 'wp_bb_init', 1 );
 
 /**
  * Registering hooks
@@ -65,10 +63,13 @@ function bb_content($type) {
 	do_action('bb_content', $type);
 }
 
+
 function bb_get_content($type) {
-
 	$GLOBALS['bb_controller']->content($type);
-
 }
 
-add_action('bb_content', 'bb_get_content', 5);
+
+add_action( 'after_setup_theme', 'bb_after_setup_theme' );
+add_action( 'init', 'bb_init', 11 );
+add_action( 'wp', 'bb_wp', 1 );
+add_action( 'bb_content', 'bb_get_content', 5 );
